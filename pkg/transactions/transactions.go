@@ -22,14 +22,15 @@ func Sum(transitions []Transaction) int64 {
 }
 
 func SumConcurrently(transactions []Transaction) int64 {
-	transactionsDateGroup := map[time.Time][]Transaction{}
+	transactionsDateGroup := map[string][]Transaction{}
 
 	for _, v := range transactions {
-		_, ok := transactionsDateGroup[v.Date]
+		period := v.Date.Format("2006-01")
+		_, ok := transactionsDateGroup[period]
 		if !ok {
-			transactionsDateGroup[v.Date] = []Transaction{v}
+			transactionsDateGroup[period] = []Transaction{v}
 		} else {
-			transactionsDateGroup[v.Date] = append(transactionsDateGroup[v.Date], v)
+			transactionsDateGroup[period] = append(transactionsDateGroup[period], v)
 		}
 	}
 
@@ -40,10 +41,10 @@ func SumConcurrently(transactions []Transaction) int64 {
 	total := int64(0)
 
 	for k, v := range transactionsDateGroup {
-		go func(k time.Time, v []Transaction) {
+		go func(k string, v []Transaction) {
 			sum := Sum(v)
 			total += sum
-			fmt.Printf("date: %v sum: %v\n", k.Format("2006-01"), sum)
+			fmt.Printf("date: %v sum: %v\n", k, sum)
 			wg.Done()
 		}(k, v)
 	}
